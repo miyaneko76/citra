@@ -6,12 +6,15 @@
 
 #include <memory>
 #include <QLabel>
+#include <QFutureWatcher>
 #include <QMainWindow>
 #include <QTimer>
+#include <QtWidgets/qprogressbar.h>
 #include <QTranslator>
 #include "common/announce_multiplayer_room.h"
 #include "core/core.h"
 #include "network/network.h"
+#include "core/hle/service/am/am.h"
 #include "ui_main.h"
 
 class Config;
@@ -82,6 +85,7 @@ signals:
      * system emulation handles and memory are still valid, but are about become invalid.
      */
     void EmulationStopping();
+    void UpdateProgress(size_t written, size_t total);
 
     void NetworkStateChanged(const Network::RoomMember::State&);
     void AnnounceFailed(const Common::WebResult&);
@@ -155,6 +159,9 @@ private slots:
     void OnGameListLoadFile(QString game_path);
     void OnGameListOpenSaveFolder(u64 program_id);
     void OnMenuLoadFile();
+     void OnMenuInstallCIA();
+    void OnUpdateProgress(size_t written, size_t total);
+    void OnCIAInstallFinished();
     /// Called whenever a user selects the "File->Select Game List Root" menu item
     void OnMenuSelectGameListRoot();
     void OnMenuRecentFile();
@@ -188,7 +195,11 @@ private:
 
     GRenderWindow* render_window;
 
+    QFutureWatcher<Service::AM::InstallStatus>* watcher = nullptr;
+
     // Status bar elements
+
+    QProgressBar* progress_bar = nullptr;
     QLabel* message_label = nullptr;
     QLabel* emu_speed_label = nullptr;
     QLabel* game_fps_label = nullptr;
@@ -238,3 +249,5 @@ protected:
 };
 
 Q_DECLARE_METATYPE(Common::WebResult);
+
+Q_DECLARE_METATYPE(size_t);
